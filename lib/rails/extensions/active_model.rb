@@ -7,7 +7,6 @@ module ActiveModel
     #   company.errors.full_message(:name, "is invalid")  # =>
     #     "Name is invalid"
     def full_message(attribute, message)
-      puts "#{attribute}: #{message}"
       return message if attribute == :base
 
       i18n_entry = :"errors.format"
