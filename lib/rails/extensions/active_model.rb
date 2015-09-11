@@ -1,31 +1,28 @@
+require 'active_model/errors'
+
 module ActiveModel
   class Errors
-    def full_messages
-      full_messages = []
+    # Returns a full message for a given attribute.
+    #
+    #   company.errors.full_message(:name, "is invalid")  # =>
+    #     "Name is invalid"
+    def full_message(attribute, message)
+      puts "#{attribute}: #{message}"
+      return message if attribute == :base
 
-      each do |attribute, messages|
-        messages = Array.wrap(messages)
-        next if messages.empty?
+      i18n_entry = :"errors.format"
+      attr_name = attribute.to_s.gsub('.', '_').humanize
+      attr_name = @base.class.human_attribute_name(attribute, :default => attr_name)
+      options = { default: "%{attribute} %{message}", attribute: attr_name }
 
-        if attribute == :base
-          messages.each {|m| full_messages << m }
-        else          
-          attr_name = attribute.to_s.gsub('.', '_').humanize
-          attr_name = @base.class.human_attribute_name(attribute, :default => attr_name)
-          options = { :default => "%{attribute} %{message}", :attribute => attr_name }
-
-          
-          messages.each do |m|
-            if m =~ /^\^/
-              full_messages << I18n.t(:"errors.format.full_message", options.merge(:message => m[1..-1], :default => "%{message}"))
-            else        
-              full_messages << I18n.t(:"errors.format", options.merge(:message => m))
-            end
-          end
-        end
+      if message =~ /^\^/
+        i18n_entry = :"errors.format.full_message"
+        options.merge!(message: message[1..-1], default: "%{message}")
+      else
+        options.merge!(message: message)
       end
 
-      full_messages
+      I18n.t(i18n_entry, options)
     end
   end
 end
